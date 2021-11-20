@@ -1,4 +1,4 @@
-import app as app
+#import app as app
 from peewee import *
 
 database_proxy = DatabaseProxy()  # Create a proxy for our db.
@@ -14,6 +14,7 @@ pg_db = PostgresqlDatabase(database='database_lab_2_pg', user='postgres', passwo
                            host="127.0.0.1", port="1111")
 
 database_proxy.initialize(sqlite_db)
+
 
 class BaseModel(Model):
     id = PrimaryKeyField(unique=True)
