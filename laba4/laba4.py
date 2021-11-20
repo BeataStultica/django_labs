@@ -5,8 +5,10 @@ from sqlalchemy.sql.schema import ForeignKey, MetaData
 
 from tkinter import *
 import tkinter.ttk as ttk
+import json
 
 
+# створює базу даних  postgree_db
 def create_postgre_db():
     conn = psycopg2.connect(
         user="postgres",
@@ -18,22 +20,25 @@ def create_postgre_db():
     cursor.close()
     conn.close()
 
+# створює зєднання з базами даних sqlite i postgresql, якщо цих баз не існує то створює ці бази
+
 
 def connect_to_dbs():
     try:
         pgengine = create_engine(
-            "postgresql+psycopg2://movieadmin1:movieadmin@localhost/postgree_db")
+            "postgresql+psycopg2://postgres:1111@localhost/postgree_db")
         pgcon = pgengine.connect()
     except:
         create_postgre_db()
         pgengine = create_engine(
-            "postgresql+psycopg2://movieadmin1:movieadmin@localhost/postgree_db")
+            "postgresql+psycopg2://postgres:1111@localhost/postgree_db")
         pgcon = pgengine.connect()
     litengine = create_engine('sqlite:///sqlite3.db')
     litecon = litengine.connect()
     return pgengine, pgcon, litengine, litecon
 
 
+# створює таблиці в обох базах даних та їх представлення
 def create_table(pgengine, pgcon, litengine, litecon, metadata):
     departament = Table('departament', metadata,
                         Column('departamentid',  Integer(
@@ -64,13 +69,14 @@ def create_table(pgengine, pgcon, litengine, litecon, metadata):
                   Column('employeeid',  Integer(
                   ), ForeignKey("employee.employeeid"))
                   )
-
+    metadata.drop_all(pgengine)
     metadata.create_all(litengine)
     metadata.drop_all(pgengine)
     metadata.create_all(pgengine)
     return departament, employee, tasks
 
 
+# вставляє нового працівника в таблицю employee
 def employee_insert(con, employee, entities):
     empl = employee.insert().values(
         name=entities[0], position=entities[1], departamentid=entities[2])
@@ -100,19 +106,17 @@ def task_status_update(con, tasks, table, taskid, new_value=None):
     print(taskid)
     if int(taskid) == -1:
         u = update(tasks).where(True).values(status="done")
-        #cursorObj.execute('UPDATE tasks SET status = "done"')
     else:
         u = update(tasks).where(tasks.c.taskid ==
                                 taskid).values(status=new_value)
-        #cursorObj.execute('UPDATE tasks SET status =? WHERE taskid =?', (new_value, taskid))
-    con.execute(u)
+        con.execute(u)
     tasks_fetch(con, tasks, table)
 
 # вивід всієї таблиці tasks в графічний інтерфейс якщо не вказаний ід або конкретного записа якщо вказаний ід
 
 
 def tasks_fetch(con, tasks, table, id=None):
-    # очищаємо таблицю
+    # очищаємо таблицю графічного інтерфейса
     for i in table.get_children():
         table.delete(i)
     if not id:
@@ -132,8 +136,11 @@ def tasks_delete(con, tasks, table, taskid):
     con.execute(delete(tasks).where(tasks.c.taskid == taskid))
     tasks_fetch(con, tasks, table)
 
+# експорт в базу даних postgreesql з бази даних sqlite
 
-def export_to_db2(litecon, pgcon, departament, employee, tasks):
+
+def export_to_db2(litecon, pgcon, departament, employee, tasks, table):
+    pgcon.execute(delete(tasks))
     task_s = select([tasks])
     r = litecon.execute(task_s)
     tasksrows = r.fetchall()
@@ -143,12 +150,56 @@ def export_to_db2(litecon, pgcon, departament, employee, tasks):
     departament_s = select([departament])
     r = litecon.execute(departament_s)
     departamentrows = r.fetchall()
+    for i in departamentrows:
+        pgcon.execute(departament.insert().values(
+            name=i[1], responsible_for=i[2]))
+    for j in employeerows:
+        pgcon.execute(employee.insert().values(
+            name=j[1], position=j[2], departamentid=j[3]))
+    for k in tasksrows:
+        pgcon.execute(tasks.insert().values(
+            taskname=k[1], employeeid=k[3], status=k[2]))
+    print('success export to db2')
+    pgcon.execute(update(tasks).where(True).values(status="done"))
+    tasks_fetch(pgcon, tasks, table)
+    a = pgcon.execute(select([tasks]))
+    print(a.fetchall())
 
-    pgcon.execute(departament.insert().values(
-        departamentrows[0], departamentrows[1], departamentrows[2]))
+
+# Запис даних з postgreesql в json
+def write_json(pgcon, tasks, departament, employee):
+    task_s = select([tasks])
+    r = pgcon.execute(task_s)
+    tasksrows = r.fetchall()
+    employee_s = select([employee])
+    r = pgcon.execute(employee_s)
+    employeerows = r.fetchall()
+    departament_s = select([departament])
+    r = pgcon.execute(departament_s)
+    departamentrows = r.fetchall()
+    tasks_data = {}
+    for i in tasksrows:
+        tasks_data[i[0]] = {'taskid': i[0], 'taskname': i[1],
+                            'status': i[2], 'employeeid': i[3]}
+    employee_data = {}
+    for i in employeerows:
+        employee_data[i[0]] = {
+            'employeeid': i[0], 'name': i[1], 'position': i[2], 'departamentid': i[3]}
+    departament_data = {}
+    for i in departamentrows:
+        departament_data[i[0]] = {'departamentid': i[0],
+                                  'name': i[1], 'responcible_for': i[2]}
+    with open('tasks.json', 'w') as f:
+        json.dump(tasks_data, f)
+    with open('departament.json', 'w') as f:
+        json.dump(departament_data, f)
+    with open('employee.json', 'w') as f:
+        json.dump(employee_data, f)
+    print("Succes export to json")
 
 
-def ui(pgengine, pgcon, litengine, litecon, departament, employee, tasks):
+# графічний інтерфейс
+def ui(pgcon,  litecon, departament, employee, tasks):
     root = Tk()
     mainf = Frame()
     mainf.pack(side=TOP, padx=10)
@@ -210,13 +261,16 @@ def ui(pgengine, pgcon, litengine, litecon, departament, employee, tasks):
     table.heading("#3", text="status")
     table.heading("#4", text="EmployeeId")
     table.pack(side=TOP, pady=10)
-    # Button(f5, text="Export to database_2(postges)", command=lambda: export_to_database2(
-    #    con, posgre_con)).pack(side=TOP, pady=10)
-    # Button(f5, text="Export to database_3(mysql)", command=lambda: export_to_database3(
-    #    posgre_con, mysql_con)).pack(side=TOP, pady=10)
+    Button(f5, text="Export to database_2(postges)", command=lambda: export_to_db2(
+        litecon, pgcon, departament, employee, tasks, table)).pack(side=TOP, pady=10)
+    Button(f5, text="Export to json", command=lambda: write_json(
+        pgcon, tasks, departament, employee)).pack(side=TOP, pady=10)
     root.mainloop()
 
 
+# головний застосунок, створює підключення до баз даних, обєкт контейнер MetaData,
+# який містить представлення таблиць, створює таблиці в обох базах даних, вставляє деякі початкові дані
+#  в базу даних sqlite та ініціалізує графічний інтерфейс для подальших операцій з базами даних
 def main():
     pgengine, pgcon, litengine, litecon = connect_to_dbs()
     print(pgengine)
@@ -228,7 +282,8 @@ def main():
     depart_insert(litecon, departament, ("loafers3", "do nothing"))
     employee_insert(litecon, employee, ("Nameless", "another nobody", 2))
     employee_insert(litecon, employee, ("TestExport", "tester", 1))
-    ui(pgengine, pgcon, litengine, litecon, departament, employee, tasks)
+    ui(pgcon,  litecon,
+        departament, employee, tasks)
 
 
 main()
