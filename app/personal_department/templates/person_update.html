@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Редагувати інформмацію про працівника
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>Редагувати інформмацію про працівника</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="first_name" id="first_name" class="form-control" value="{{ person.first_name }}"
+               placeholder="Введіть Ім'я"><br>
+        <input type="text" name="last_name" id="last_name" class="form-control" value="{{ person.last_name }}"
+               placeholder="Введіть Прізвище"><br>
+        <input type="text" name="position" id="position" class="form-control" value="{{ person.position }}"
+               placeholder="Введіть позицію в компанії"><br>
+        <textarea name="bio" id="bio" class="form-control"
+                  placeholder="Введіть інформацію про себе">{{ person.bio }}</textarea><br>
+        <textarea name="responsibilities" id="responsibilities" class="form-control" placeholder="Введіть обов'язки">{{ person.responsibilities }}</textarea><br>
+        <textarea name="orders" id="orders" class="form-control"
+                  placeholder="Введіть накази">{{ person.orders }}</textarea><br>
+        <input type="submit" class="btn btn-success" value="Редагувати"><br>
+    </form>
+</div>
+{% endblock %}

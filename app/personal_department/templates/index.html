@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Головна сторінка
+{% endblock %}
+
+{% block body %}
+<div class="container">
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+  <h1 class="display-4">Ціни</h1>
+  <p class="lead">Підписки на використання системи Personal Department</p>
+</div>
+<div class="card-deck mb-3 text-center">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Безкоштовно</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$0 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>10 працівників</li>
+          <li>Email підтримка</li>
+          <li>Telegram підтримка</li>
+        </ul>
+        <button type="button" class="btn btn-lg btn-block btn-outline-primary">Спробувати</button>
+      </div>
+    </div>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Про</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$15 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>100 працівників</li>
+          <li>Email підтримка</li>
+          <li>Telegram підтримка</li>
+        </ul>
+        <button type="button" class="btn btn-lg btn-block btn-primary">Почати</button>
+      </div>
+    </div>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Підприємство</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$29 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>1000 працівників</li>
+          <li>Email і Telegram підтримка</li>
+          <li>Підтримка по телефону</li>
+        </ul>
+        <button type="button" class="btn btn-lg btn-block btn-primary">Зв'язатися з нами</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

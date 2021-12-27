@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Додання працівника
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>Додати працівника</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="first_name" id="firstName" class="form-control" placeholder="Введіть Ім'я"><br>
+        <input type="text" name="last_name" id="lastName" class="form-control" placeholder="Введіть Прізіище"><br>
+        <input type="text" name="position" id="position" class="form-control"
+               placeholder="Введіть позицію в компанії"><br>
+        <textarea name="bio" id="bio" class="form-control" placeholder="Введіть інформацію про себе"></textarea><br>
+        <textarea name="responsibilities" id="responsibilities" class="form-control"
+                  placeholder="Введіть обов'язки"></textarea><br>
+        <textarea name="orders" id="orders" class="form-control" placeholder="Введіть накази"></textarea><br>
+        <input type="submit" class="btn btn-success" value="Зберегти"><br>
+    </form>
+</div>
+{% endblock %}

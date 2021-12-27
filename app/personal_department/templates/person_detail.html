@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ person.firstName }} {{ person.lastName }}
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>{{ person.first_name }} {{ person.last_name }}</h1>
+
+    <div class="alert alert-info">
+        <p>{{ person.bio }}</p>
+        <p>{{ person.position }}</p>
+        <p>{{ person.responsibilities }}</p>
+        <p>{{ person.orders }}</p>
+        <p><b>Дата: {{ person.date }}</b></p>
+        <a href="/persons/{{ person.id }}/delete" class="btn btn-danger">Видалити</a>
+        <a href="/persons/{{ person.id }}/update" class="btn btn-success">Редагувати</a>
+    </div>
+</div>
+{% endblock %}
